@@ -9,14 +9,18 @@ const Display = () => {
   const [page, setPage] = useState("Accounts");
   const [accounts, setAccounts] = useState([]);
 
-  useEffect(() => {
+  const getAllAccounts = () => {
     fetch("http://localhost:8081/api/accounts/getAll", { method: "GET" })
       .then((response) => response.json())
       .then((data) => setAccounts(data))
       .catch((error) => {
         console.error(error);
-        window.alert(`Cannot fetch data due to an error: ${error}`)
+        window.alert(`Cannot fetch data due to an error: ${error}`);
       });
+  };
+
+  useEffect(() => {
+    getAllAccounts();
   }, []);
 
   const renderPage = () => {
@@ -24,7 +28,13 @@ const Display = () => {
       case "Create":
         return <CreateAccount accounts={accounts} setAccounts={setAccounts} />;
       case "Accounts":
-        return <AccountsDetails accounts={accounts} setAccounts={setAccounts} />;
+        return (
+          <AccountsDetails
+            accounts={accounts}
+            setAccounts={setAccounts}
+            getAllAccounts={getAllAccounts}
+          />
+        );
       case "Transactions":
         return <TransactionHistory />;
       case "Transfer":
@@ -38,10 +48,10 @@ const Display = () => {
     <>
       <h1 className={style.mainHeading}>Banking</h1>
       <div className={style.buttons}>
-      <button onClick={() => setPage("Create")}>Create</button>
-      <button onClick={() => setPage("Accounts")}>Accounts</button>
-      <button onClick={() => setPage("Transactions")}>Transactions</button>
-      <button onClick={() => setPage("Transfer")}>Transfer</button>
+        <button onClick={() => setPage("Create")}>Create</button>
+        <button onClick={() => setPage("Accounts")}>Accounts</button>
+        <button onClick={() => setPage("Transactions")}>Transactions</button>
+        <button onClick={() => setPage("Transfer")}>Transfer</button>
       </div>
       <div>{renderPage()}</div>
     </>

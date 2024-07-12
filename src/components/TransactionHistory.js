@@ -36,7 +36,13 @@ const TransactionHistory = () => {
             window.alert("There is no transaction history on this account Id");
           }
         })
-        .then((data) => setTransactions(data))
+        .then((data) => {
+          if (data.length>0) {
+            setTransactions(data)
+          } else {
+            window.alert("There is no transaction history on this account Id");
+          }
+        })
         .catch((error) => {
           console.error(error);
           window.alert(`Search failed due to an error: ${error}`);
@@ -58,16 +64,14 @@ const TransactionHistory = () => {
       <div className={style.search}>
         <form
           method="get"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSearch();
-          }}
+          onSubmit={handleSearch}
         >
           <input
             type="number"
             value={searchAccountId}
-            placeholder="Enter a value"
+            placeholder="Enter account Id"
             onChange={(e) => setSearchAccountId(e.target.value)}
+            min={1}
           />
         </form>
         <button onClick={handleSearch}>Search</button>

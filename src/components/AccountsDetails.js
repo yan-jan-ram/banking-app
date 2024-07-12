@@ -1,7 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import style from "./accountsDetails.module.css";
 
-const AccountsDetails = ({ accounts, setAccounts }) => {
+const AccountsDetails = ({ accounts, setAccounts, getAllAccounts }) => {
+  const [searchAccountId, setSearchAccountId] = useState("");
+
+  const getAccountById = (e) => {
+    e.preventDefault();
+    if (searchAccountId) {
+      fetch(`http://localhost:8081/api/accounts/get/${searchAccountId}`, {
+        method: "GET",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.accountId) {
+            setAccounts([data]);
+          } else {
+            window.alert("No account found with the entered ID.");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          window.alert(`Cannot fetch data due to an error: ${error}`);
+        });
+    } else {
+      window.alert("Enter account Id to proceed");
+    }
+  };
+
+  const handleSearchReset = () => {
+    getAllAccounts();
+    setSearchAccountId("");
+  };
+
   const handleUpdate = (accountId) => {
     const newHolderName = window.prompt("Edit holder name: ");
     const newBalance = window.prompt("Edit available balance: ");
@@ -124,6 +154,24 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
   return (
     <section className={style.section}>
       <h3 className={style.sideHeading}>Accounts Section</h3>
+      <div className={style.search}>
+        <form method="get" onSubmit={getAccountById}>
+          <input
+            type="number"
+            value={searchAccountId}
+            onChange={(e) => setSearchAccountId(e.target.value)}
+            placeholder="Enter account Id"
+            className={style.searchInput}
+            min={1}
+          />
+          <div className={style.fetchButton}>
+            <button type="submit">Search</button>
+            <button type="button" onClick={handleSearchReset}>
+              Reset
+            </button>
+          </div>
+        </form>
+      </div>
       <table className={style.accountsTable}>
         <thead>
           <tr>
