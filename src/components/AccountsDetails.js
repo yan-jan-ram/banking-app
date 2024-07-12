@@ -27,10 +27,13 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
             );
             window.alert("Account updated successfully!");
           } else {
-            window.alert("Failed to update the account!");
+            throw new Error("Failed to update the account!");
           }
         })
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          window.alert(`Failed to update due to an error: ${error}`);
+        });
     }
   };
 
@@ -46,10 +49,13 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
             );
             window.alert("Account deleted successfully!");
           } else {
-            console.error("Failed to delete the account!");
+            throw new Error("Failed to delete the account!");
           }
         })
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          window.alert(`Failed to delete due to an error: ${error}`);
+        });
     }
   };
 
@@ -66,7 +72,7 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           if (response.ok) {
             return response.json();
           } else {
-            window.alert("Deposit failed!");
+            throw new Error("Deposit failed!");
           }
         })
         .then((updatedAccount) => {
@@ -77,7 +83,10 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           );
           window.alert("Deposit successful!");
         })
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          window.alert(`Failed to deposit amount due to an error: ${error}`);
+        });
     }
   };
 
@@ -94,7 +103,7 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           if (response.ok) {
             return response.json();
           } else {
-            window.alert("Withdraw failed!");
+            throw new Error("Withdraw failed!");
           }
         })
         .then((updatedAccount) => {
@@ -105,7 +114,10 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           );
           window.alert("Withdraw success!");
         })
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          window.alert(`Failed to withdraw amount due to an error: ${error}`);
+        });
     }
   };
 

@@ -3,7 +3,7 @@ import CreateAccount from "./CreateAccount";
 import AccountsDetails from "./AccountsDetails";
 import TransactionHistory from "./TransactionHistory";
 import TransferAmount from "./TransferAmount";
-import style from "./display.module.css"; // Add this line to import your CSS module
+import style from "./display.module.css";
 
 const Display = () => {
   const [page, setPage] = useState("Accounts");
@@ -13,13 +13,16 @@ const Display = () => {
     fetch("http://localhost:8081/api/accounts/getAll", { method: "GET" })
       .then((response) => response.json())
       .then((data) => setAccounts(data))
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        console.error(error);
+        window.alert(`Cannot fetch data due to an error: ${error}`)
+      });
   }, []);
 
   const renderPage = () => {
     switch (page) {
       case "Create":
-        return <CreateAccount setAccounts={setAccounts} />;
+        return <CreateAccount accounts={accounts} setAccounts={setAccounts} />;
       case "Accounts":
         return <AccountsDetails accounts={accounts} setAccounts={setAccounts} />;
       case "Transactions":
