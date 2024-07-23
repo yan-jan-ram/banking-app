@@ -6,7 +6,7 @@ import TransferAmount from "./TransferAmount";
 import style from "./display.module.css";
 
 const Display = () => {
-  const [page, setPage] = useState("Accounts");
+  const [page, setPage] = useState("Create");
   const [accounts, setAccounts] = useState([]);
 
   const getAllAccounts = () => {
