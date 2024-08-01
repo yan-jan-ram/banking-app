@@ -58,6 +58,8 @@ const CreateAccount = ({ accounts, setAccounts }) => {
               type="number"
               placeholder="Enter amount"
               value={balance}
+              min={0}
+              max={1000000}
               onChange={(e) => setBalance(e.target.value)}
             />
           </div>

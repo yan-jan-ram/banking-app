@@ -25,6 +25,7 @@ const AccountsDetails = ({ accounts, setAccounts, getAllAccounts }) => {
     } else {
       window.alert("Enter account Id to proceed");
     }
+    setSearchAccountId("")
   };
 
   const handleSearchReset = () => {

@@ -1,3 +1,9 @@
+.sideHeading {
+  color: cornflowerblue;
+  display: grid;
+  place-items: center;
+}
+
 .transferSection {
   padding: 20px;
   background-color: #eae1c1;
