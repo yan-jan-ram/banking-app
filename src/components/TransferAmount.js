@@ -1,59 +1,94 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import style from "./transferAmount.module.css";
 
 const TransferAmount = ({ accounts, setAccounts }) => {
   const [fromAccountId, setFromAccountId] = useState(1);
   const [toAccountId, setToAccountId] = useState(1);
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleTransfer = (e) => {
     e.preventDefault();
-    if (fromAccountId && toAccountId && amount) {
-      fetch(`http://localhost:8081/api/accounts/transfer`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fromAccountId: parseInt(fromAccountId),
-          toAccountId: parseInt(toAccountId),
-          amount: parseFloat(amount),
-        }),
-      })
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            window.alert("Transfer failed!");
-          }
-        })
-        .then((updatedAccounts) => {
-          setAccounts(
-            accounts.map((account) =>
-              account.accountId === updatedAccounts.fromAccount.accountId
-                ? updatedAccounts.fromAccount
-                : account.accountId === updatedAccounts.toAccount.accountId
-                ? updatedAccounts.toAccount
-                : account
-            )
-          );
-          window.alert("Transfer successful!");
-        })
-        .catch((error) => {
-          console.error(error);
-          window.alert(`Error: ${error}`);
-        });
+
+    if (!fromAccountId || !toAccountId || !amount || amount <= 0) {
+      return navigate(
+        `/error?code=400&message=${encodeURIComponent(
+          "All fields are required and amount must be positive."
+        )}`
+      );
     }
-    handleReset();
+
+    const fromAccount = accounts.find(
+      (acc) => acc.accountId === parseInt(fromAccountId)
+    );
+    if (fromAccount && amount > fromAccount.balance) {
+      return navigate(
+        `/error?code=400&message=${encodeURIComponent("Insufficient funds.")}`
+      );
+    }
+
+    setIsSubmitting(true);
+
+    fetch("http://localhost:8081/api/accounts/transfer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fromAccountId: parseInt(fromAccountId),
+        toAccountId: parseInt(toAccountId),
+        amount: parseFloat(amount),
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          if (response.status === 400) {
+            throw new Error("Bad request (400): Invalid input.");
+          } else if (response.status === 404) {
+            throw new Error("Not found (404): Account(s) not found.");
+          } else if (response.status === 500) {
+            throw new Error("Server error (500): Internal server error.");
+          } else {
+            throw new Error(`Unexpected error: ${response.status}`);
+          }
+        }
+        return response.json();
+      })
+      .then((updatedAccounts) => {
+        setAccounts(
+          accounts.map((account) =>
+            account.accountId === updatedAccounts.fromAccount.accountId
+              ? updatedAccounts.fromAccount
+              : account.accountId === updatedAccounts.toAccount.accountId
+              ? updatedAccounts.toAccount
+              : account
+          )
+        );
+        window.alert("Transfer successful!");
+        handleReset();
+      })
+      .catch((error) => {
+        console.error(error);
+        navigate(
+          `/error?code=${
+            error.message.includes("500") ? 500 : 400
+          }&message=${encodeURIComponent(error.message)}`
+        );
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
   };
 
   const handleReset = () => {
     setFromAccountId(1);
     setToAccountId(1);
-    setAmount(0);
+    setAmount("");
   };
 
   return (
     <>
-      <h3 className={style.sideHeading}>Transfer amount</h3>
+      <h3 className={style.sideHeading}>Transfer Amount</h3>
       <section className={style.transferSection}>
         <form className={style.transferForm} onSubmit={handleTransfer}>
           <div className={style.formGroup}>
@@ -66,6 +101,7 @@ const TransferAmount = ({ accounts, setAccounts }) => {
               onChange={(e) => setFromAccountId(e.target.value)}
               placeholder="Enter From account Id"
               className={style.inputField}
+              disabled={isSubmitting}
             />
           </div>
           <div className={style.formGroup}>
@@ -78,6 +114,7 @@ const TransferAmount = ({ accounts, setAccounts }) => {
               onChange={(e) => setToAccountId(e.target.value)}
               placeholder="Enter To account Id"
               className={style.inputField}
+              disabled={isSubmitting}
             />
           </div>
           <div className={style.formGroup}>
@@ -86,17 +123,18 @@ const TransferAmount = ({ accounts, setAccounts }) => {
               type="number"
               id="amount"
               min={0}
-              max={accounts.balance}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount to transfer"
               className={style.inputField}
+              disabled={isSubmitting}
             />
           </div>
           <div className={style.buttonGroup}>
             <button
               type="submit"
               className={`${style.btn} ${style.btnTransfer}`}
+              disabled={isSubmitting}
             >
               Transfer
             </button>
@@ -104,6 +142,7 @@ const TransferAmount = ({ accounts, setAccounts }) => {
               type="button"
               onClick={handleReset}
               className={`${style.btn} ${style.btnCancel}`}
+              disabled={isSubmitting}
             >
               Cancel
             </button>

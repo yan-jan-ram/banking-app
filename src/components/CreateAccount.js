@@ -1,13 +1,18 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import style from "./createAccount.module.css";
 
 const CreateAccount = ({ accounts, setAccounts }) => {
   const [holderName, setHolderName] = useState("");
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (holderName && balance) {
+      setIsSubmitting(true);
+
       fetch("http://localhost:8081/api/accounts/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -17,24 +22,40 @@ const CreateAccount = ({ accounts, setAccounts }) => {
         }),
       })
         .then((response) => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error("Failed to create the account");
+          if (!response.ok) {
+            if (response.status === 400) {
+              throw new Error("Bad request (400): Invalid input.");
+            } else if (response.status === 500) {
+              throw new Error("Server error (500): Internal server error.");
+            } else {
+              throw new Error(`Unexpected error: ${response.status}`);
+            }
           }
+          return response.json();
         })
         .then((newAccount) => {
           setAccounts([...accounts, newAccount]);
           window.alert("Account created successfully!");
           setHolderName("");
-          setBalance(0);
+          setBalance("");
         })
         .catch((error) => {
           console.error(error);
-          window.alert(`Account creation failed due to error: ${error}`);
+          navigate(
+            `/error?code=${
+              error.message.includes("500") ? 500 : 400
+            }&message=${encodeURIComponent(error.message)}`
+          );
+        })
+        .finally(() => {
+          setIsSubmitting(false);
         });
     } else {
-      window.alert("Please provide both holder name and balance");
+      navigate(
+        `/error?code=400&message=${encodeURIComponent(
+          "Please provide both holder name and balance"
+        )}`
+      );
     }
   };
 
@@ -50,6 +71,7 @@ const CreateAccount = ({ accounts, setAccounts }) => {
               placeholder="Enter name"
               value={holderName}
               onChange={(e) => setHolderName(e.target.value)}
+              disabled={isSubmitting}
             />
           </div>
           <div>
@@ -61,16 +83,20 @@ const CreateAccount = ({ accounts, setAccounts }) => {
               min={0}
               max={1000000}
               onChange={(e) => setBalance(e.target.value)}
+              disabled={isSubmitting}
             />
           </div>
           <div className={style.buttonGroup}>
-            <button onClick={handleSubmit}>Create</button>
+            <button type="submit" disabled={isSubmitting}>
+              Create
+            </button>
             <button
               type="button"
               onClick={() => {
                 setHolderName("");
-                setBalance(0);
+                setBalance("");
               }}
+              disabled={isSubmitting}
             >
               Cancel
             </button>

@@ -1,27 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import style from "./transactionHistory.module.css";
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
   const [searchAccountId, setSearchAccountId] = useState("");
+  const navigate = useNavigate();
 
-  const fetchAllTransactions = () => {
+  const fetchAllTransactions = useCallback(() => {
     fetch("http://localhost:8081/api/accounts/transactions", {
       method: "GET",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
       .then((data) => setTransactions(data))
       .catch((error) => {
         console.error(error);
-        window.alert(
-          `Transaction history can't be loaded due to error: ${error}`
+        navigate(
+          `/error?code=500&message=${encodeURIComponent(error.message)}`
         );
       });
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchAllTransactions();
-  }, []);
+  }, [fetchAllTransactions]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -30,26 +37,35 @@ const TransactionHistory = () => {
         `http://localhost:8081/api/accounts/transactions/${searchAccountId}`
       )
         .then((response) => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            window.alert("There is no transaction history on this account Id");
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
           }
+          return response.json();
         })
         .then((data) => {
-          if (data.length>0) {
-            setTransactions(data)
+          if (data.length > 0) {
+            setTransactions(data);
           } else {
-            window.alert("There is no transaction history on this account Id");
+            navigate(
+              `/error?code=404&message=${encodeURIComponent(
+                "No transactions found for this account ID"
+              )}`
+            );
           }
         })
         .catch((error) => {
           console.error(error);
-          window.alert(`Search failed due to an error: ${error}`);
+          navigate(
+            `/error?code=500&message=${encodeURIComponent(error.message)}`
+          );
         });
       setSearchAccountId("");
     } else {
-      window.alert("Enter account Id to proceed");
+      navigate(
+        `/error?code=400&message=${encodeURIComponent(
+          "Enter account ID to proceed"
+        )}`
+      );
     }
   };
 
@@ -62,10 +78,7 @@ const TransactionHistory = () => {
     <section className={style.section}>
       <h3 className={style.sideHeading}>Transactions Section</h3>
       <div className={style.search}>
-        <form
-          method="get"
-          onSubmit={handleSearch}
-        >
+        <form method="get" onSubmit={handleSearch}>
           <input
             type="number"
             value={searchAccountId}

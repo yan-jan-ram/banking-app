@@ -1,60 +1,77 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+} from "react-router-dom";
 import CreateAccount from "./CreateAccount";
 import AccountsDetails from "./AccountsDetails";
 import TransactionHistory from "./TransactionHistory";
 import TransferAmount from "./TransferAmount";
+import ErrorPage from "./ErrorPage";
 import style from "./display.module.css";
 
 const Display = () => {
-  const [page, setPage] = useState("Create");
   const [accounts, setAccounts] = useState([]);
 
-  const getAllAccounts = () => {
-    fetch("http://localhost:8081/api/accounts/getAll", { method: "GET" })
-      .then((response) => response.json())
-      .then((data) => setAccounts(data))
-      .catch((error) => {
-        console.error(error);
-        window.alert(`Cannot fetch data due to an error: ${error}`);
-      });
-  };
-
-  useEffect(() => {
-    getAllAccounts();
-  }, []);
-
-  const renderPage = () => {
-    switch (page) {
-      case "Create":
-        return <CreateAccount accounts={accounts} setAccounts={setAccounts} />;
-      case "Accounts":
-        return (
-          <AccountsDetails
-            accounts={accounts}
-            setAccounts={setAccounts}
-            getAllAccounts={getAllAccounts}
-          />
-        );
-      case "Transactions":
-        return <TransactionHistory />;
-      case "Transfer":
-        return <TransferAmount accounts={accounts} setAccounts={setAccounts} />;
-      default:
-        return <h1>Loading...</h1>;
-    }
-  };
-
   return (
-    <>
-      <h1 className={style.mainHeading}>Banking</h1>
-      <div className={style.buttons}>
-        <button onClick={() => setPage("Create")}>Create</button>
-        <button onClick={() => setPage("Accounts")}>Accounts</button>
-        <button onClick={() => setPage("Transactions")}>Transactions</button>
-        <button onClick={() => setPage("Transfer")}>Transfer</button>
-      </div>
-      <div>{renderPage()}</div>
-    </>
+    <Router>
+      <header>
+        <h1 className={style.mainHeading}>Banking</h1>
+        <nav className={style.buttons}>
+          <Link to="/create">
+            <button className={style.navButton}>Create</button>
+          </Link>
+          <Link to="/accounts">
+            <button className={style.navButton}>Accounts</button>
+          </Link>
+          <Link to="/transactions">
+            <button className={style.navButton}>Transactions</button>
+          </Link>
+          <Link to="/transfer">
+            <button className={style.navButton}>Transfer</button>
+          </Link>
+        </nav>
+      </header>
+      <main>
+        <Routes>
+          <Route
+            path="/create"
+            element={
+              <CreateAccount accounts={accounts} setAccounts={setAccounts} />
+            }
+          />
+          <Route
+            path="/accounts"
+            element={
+              <AccountsDetails accounts={accounts} setAccounts={setAccounts} />
+            }
+          />
+          <Route path="/transactions" element={<TransactionHistory />} />
+          <Route
+            path="/transfer"
+            element={
+              <TransferAmount accounts={accounts} setAccounts={setAccounts} />
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <h1 className={style.welcome}>Welcome to the Banking App</h1>
+            }
+          />
+          <Route path="/error" element={<ErrorPage />} />
+          <Route
+            path="*"
+            element={
+              <Navigate to="/error?code=404&message=Page%20not%20found" />
+            }
+          />
+        </Routes>
+      </main>
+    </Router>
   );
 };
 
