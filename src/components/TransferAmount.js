@@ -20,12 +20,42 @@ const TransferAmount = ({ accounts, setAccounts }) => {
       );
     }
 
+    if (parseInt(fromAccountId) === parseInt(toAccountId)) {
+      return navigate(
+        `/error?code=400&message=${encodeURIComponent(
+          "Cannot transfer to the same account."
+        )}`
+      );
+    }
+
     const fromAccount = accounts.find(
       (acc) => acc.accountId === parseInt(fromAccountId)
     );
-    if (fromAccount && amount > fromAccount.balance) {
+    const toAccount = accounts.find(
+      (acc) => acc.accountId === parseInt(toAccountId)
+    );
+
+    if (!fromAccount) {
       return navigate(
-        `/error?code=400&message=${encodeURIComponent("Insufficient funds.")}`
+        `/error?code=404&message=${encodeURIComponent(
+          `From account with ID ${fromAccountId} does not exist.`
+        )}`
+      );
+    }
+
+    if (!toAccount) {
+      return navigate(
+        `/error?code=404&message=${encodeURIComponent(
+          `To account with ID ${toAccountId} does not exist.`
+        )}`
+      );
+    }
+
+    if (amount > fromAccount.balance) {
+      return navigate(
+        `/error?code=400&message=${encodeURIComponent(
+          `Insufficient funds in account ID ${fromAccountId}.`
+        )}`
       );
     }
 

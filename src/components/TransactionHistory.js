@@ -13,15 +13,25 @@ const TransactionHistory = () => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
+          if (response.status === 400) {
+            throw new Error("Bad request (400)");
+          } else if (response.status === 404) {
+            throw new Error("Transactions not found (404)");
+          } else if (response.status === 500) {
+            throw new Error("Server error (500)");
+          } else {
+            throw new Error(`Unexpected error (${response.status})`);
+          }
         }
         return response.json();
       })
       .then((data) => setTransactions(data))
       .catch((error) => {
-        console.error(error);
+        const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
         navigate(
-          `/error?code=500&message=${encodeURIComponent(error.message)}`
+          `/error?code=${errorCode}&message=${encodeURIComponent(
+            error.message
+          )}`
         );
       });
   }, [navigate]);
@@ -34,11 +44,22 @@ const TransactionHistory = () => {
     e.preventDefault();
     if (searchAccountId) {
       fetch(
-        `http://localhost:8081/api/accounts/transactions/${searchAccountId}`
+        `http://localhost:8081/api/accounts/transactions/${searchAccountId}`,
+        {
+          method: "GET",
+        }
       )
         .then((response) => {
           if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
+            if (response.status === 400) {
+              throw new Error("Bad request (400)");
+            } else if (response.status === 404) {
+              throw new Error("Transactions not found (404)");
+            } else if (response.status === 500) {
+              throw new Error("Server error (500)");
+            } else {
+              throw new Error(`Unexpected error (${response.status})`);
+            }
           }
           return response.json();
         })
@@ -46,26 +67,20 @@ const TransactionHistory = () => {
           if (data.length > 0) {
             setTransactions(data);
           } else {
-            navigate(
-              `/error?code=404&message=${encodeURIComponent(
-                "No transactions found for this account ID"
-              )}`
-            );
+            throw new Error("Transactions not found (404)");
           }
         })
         .catch((error) => {
-          console.error(error);
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
       setSearchAccountId("");
     } else {
-      navigate(
-        `/error?code=400&message=${encodeURIComponent(
-          "Enter account ID to proceed"
-        )}`
-      );
+      window.alert("Enter account ID to proceed");
     }
   };
 
@@ -82,21 +97,21 @@ const TransactionHistory = () => {
           <input
             type="number"
             value={searchAccountId}
-            placeholder="Enter account Id"
+            placeholder="Enter account ID"
             onChange={(e) => setSearchAccountId(e.target.value)}
             min={1}
           />
         </form>
         <button onClick={handleSearch}>Search</button>
-        <button type="reset" onClick={() => handleReset()}>
+        <button type="reset" onClick={handleReset}>
           Reset
         </button>
       </div>
       <table className={style.transactionsTable}>
         <thead>
           <tr>
-            <th>Transaction Id</th>
-            <th>Account Id</th>
+            <th>Transaction ID</th>
+            <th>Account ID</th>
             <th>Amount</th>
             <th>Transaction Type</th>
             <th>Timestamp</th>

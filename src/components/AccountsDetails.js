@@ -11,20 +11,25 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
       fetch("http://localhost:8081/api/accounts/getAll", { method: "GET" })
         .then((response) => {
           if (!response.ok) {
-            if (response.status === 404) {
+            if (response.status === 400) {
+              throw new Error("Bad request (400)");
+            } else if (response.status === 404) {
               throw new Error("Accounts not found (404)");
             } else if (response.status === 500) {
               throw new Error("Server error (500)");
             } else {
-              throw new Error(`Unexpected error: ${response.status}`);
+              throw new Error(`Unexpected error (${response.status})`);
             }
           }
           return response.json();
         })
         .then((data) => setAccounts(data))
         .catch((error) => {
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
     };
@@ -40,14 +45,14 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
       })
         .then((response) => {
           if (!response.ok) {
-            if (response.status === 404) {
-              throw new Error("Account not found (404)");
-            } else if (response.status === 400) {
+            if (response.status === 400) {
               throw new Error("Bad request (400)");
+            } else if (response.status === 404) {
+              throw new Error("Account not found (404)");
             } else if (response.status === 500) {
               throw new Error("Server error (500)");
             } else {
-              throw new Error(`Unexpected error: ${response.status}`);
+              throw new Error(`Unexpected error (${response.status})`);
             }
           }
           return response.json();
@@ -55,13 +60,14 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
         .then((data) => {
           if (data.accountId) {
             setAccounts([data]);
-          } else {
-            window.alert("No account found with the entered ID.");
           }
         })
         .catch((error) => {
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
     } else {
@@ -75,20 +81,25 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
       fetch("http://localhost:8081/api/accounts/getAll", { method: "GET" })
         .then((response) => {
           if (!response.ok) {
-            if (response.status === 404) {
+            if (response.status === 400) {
+              throw new Error("Bad request (400)");
+            } else if (response.status === 404) {
               throw new Error("Accounts not found (404)");
             } else if (response.status === 500) {
               throw new Error("Server error (500)");
             } else {
-              throw new Error(`Unexpected error: ${response.status}`);
+              throw new Error(`Unexpected error (${response.status})`);
             }
           }
           return response.json();
         })
         .then((data) => setAccounts(data))
         .catch((error) => {
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
     };
@@ -122,12 +133,21 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
             );
             window.alert("Account updated successfully!");
           } else {
-            throw new Error("Failed to update the account!");
+            if (response.status === 400) {
+              throw new Error("Bad request (400)");
+            } else if (response.status === 500) {
+              throw new Error("Server error (500)");
+            } else {
+              throw new Error(`Unexpected error (${response.status})`);
+            }
           }
         })
         .catch((error) => {
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
     }
@@ -145,12 +165,21 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
             );
             window.alert("Account deleted successfully!");
           } else {
-            throw new Error("Failed to delete the account!");
+            if (response.status === 400) {
+              throw new Error("Bad request (400)");
+            } else if (response.status === 500) {
+              throw new Error("Server error (500)");
+            } else {
+              throw new Error(`Unexpected error (${response.status})`);
+            }
           }
         })
         .catch((error) => {
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
     }
@@ -169,7 +198,13 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           if (response.ok) {
             return response.json();
           } else {
-            throw new Error("Deposit failed!");
+            if (response.status === 400) {
+              throw new Error("Bad request (400)");
+            } else if (response.status === 500) {
+              throw new Error("Server error (500)");
+            } else {
+              throw new Error(`Unexpected error (${response.status})`);
+            }
           }
         })
         .then((updatedAccount) => {
@@ -181,8 +216,11 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           window.alert("Deposit successful!");
         })
         .catch((error) => {
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
     }
@@ -201,7 +239,13 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           if (response.ok) {
             return response.json();
           } else {
-            throw new Error("Withdraw failed!");
+            if (response.status === 400) {
+              throw new Error("Bad request (400)");
+            } else if (response.status === 500) {
+              throw new Error("Server error (500)");
+            } else {
+              throw new Error(`Unexpected error (${response.status})`);
+            }
           }
         })
         .then((updatedAccount) => {
@@ -213,8 +257,11 @@ const AccountsDetails = ({ accounts, setAccounts }) => {
           window.alert("Withdraw success!");
         })
         .catch((error) => {
+          const errorCode = error.message.match(/\((\d+)\)/)?.[1] || 500;
           navigate(
-            `/error?code=500&message=${encodeURIComponent(error.message)}`
+            `/error?code=${errorCode}&message=${encodeURIComponent(
+              error.message
+            )}`
           );
         });
     }

@@ -11,6 +11,7 @@ import AccountsDetails from "./AccountsDetails";
 import TransactionHistory from "./TransactionHistory";
 import TransferAmount from "./TransferAmount";
 import ErrorPage from "./ErrorPage";
+import ToggleTheme from "./ToggleTheme"
 import style from "./display.module.css";
 
 const Display = () => {
@@ -20,6 +21,7 @@ const Display = () => {
     <Router>
       <header>
         <h1 className={style.mainHeading}>Banking</h1>
+        <ToggleTheme />
         <nav className={style.buttons}>
           <Link to="/create">
             <button className={style.navButton}>Create</button>

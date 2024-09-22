@@ -59,6 +59,13 @@ const CreateAccount = ({ accounts, setAccounts }) => {
     }
   };
 
+  const handleHolderNameChange = (e) => {
+    const value = e.target.value;
+    if (/^[a-zA-Z\s]*$/.test(value)) {
+      setHolderName(value);
+    }
+  };
+
   return (
     <section className={style.create}>
       <h3 className={style.sideHeading}>New Account</h3>
@@ -70,7 +77,7 @@ const CreateAccount = ({ accounts, setAccounts }) => {
               type="text"
               placeholder="Enter name"
               value={holderName}
-              onChange={(e) => setHolderName(e.target.value)}
+              onChange={handleHolderNameChange}
               disabled={isSubmitting}
             />
           </div>

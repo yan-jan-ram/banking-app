@@ -1,0 +1,41 @@
+:root {
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+body.dark-mode {
+  --background-color: #000000;
+  --text-color: #000000;
+}
+
+.toggleButton {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .toggleButton {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+}
+
+.toggleButton:hover {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+
+body.dark-mode .toggleButton:hover {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+}
